@@ -1,7 +1,0 @@
-2017-12-16 20:33:18,488 [__main__] INFO: FIT
-2017-12-16 20:33:18,645 [__main__] INFO: EVALUATE
-2017-12-16 20:33:19,154 [__main__] INFO: Accuracy test: 32.26%
-2017-12-16 20:33:19,154 [__main__] INFO: Accuracy train: 99.20%
-2017-12-16 20:33:19,155 [__main__] INFO: 0:00:00.927606
-2017-12-16 20:33:19,497 [__main__] INFO: Done
-2017-12-16 20:33:19,497 [__main__] INFO: Results path: /home/cel/cobs/tmp/2017-12-16 20:33:18.228929 5 RF_TOX21  0.323/

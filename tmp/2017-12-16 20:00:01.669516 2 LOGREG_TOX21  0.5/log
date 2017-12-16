@@ -1,8 +1,0 @@
-2017-12-16 20:00:01,746 [__main__] INFO: GRID SEARCH
-2017-12-16 20:00:01,746 [__main__] INFO: FIT
-2017-12-16 20:00:16,189 [__main__] INFO: EVALUATE
-2017-12-16 20:00:16,199 [__main__] INFO: Accuracy test: 50.00%
-2017-12-16 20:00:16,199 [__main__] INFO: Accuracy train: 70.75%
-2017-12-16 20:00:16,200 [__main__] INFO: 0:00:14.531876
-2017-12-16 20:00:16,380 [__main__] INFO: Done
-2017-12-16 20:00:16,380 [__main__] INFO: Results path: /home/cel/cobs/tmp/2017-12-16 20:00:01.669516 2 LOGREG_TOX21  0.5/

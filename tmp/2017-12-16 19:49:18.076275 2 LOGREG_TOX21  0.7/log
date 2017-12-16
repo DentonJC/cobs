@@ -1,7 +1,0 @@
-2017-12-16 19:49:18,140 [__main__] INFO: FIT
-2017-12-16 19:49:18,174 [__main__] INFO: EVALUATE
-2017-12-16 19:49:18,257 [__main__] INFO: Accuracy test: 70.00%
-2017-12-16 19:49:18,259 [__main__] INFO: Accuracy train: 100.00%
-2017-12-16 19:49:18,262 [__main__] INFO: 0:00:00.185154
-2017-12-16 19:49:18,448 [__main__] INFO: Done
-2017-12-16 19:49:18,448 [__main__] INFO: Results path: /home/cel/cobs/tmp/2017-12-16 19:49:18.076275 2 LOGREG_TOX21  0.7/
