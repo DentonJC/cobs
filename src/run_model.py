@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, IsolationForest 
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split
-from sklearn.metrics import matthews_corrcoef, make_scorer
+from sklearn.metrics import matthews_corrcoef, make_scorer, accuracy_score, recall_score
 from src.main import create_callbacks, read_config, evaluate, start_log
 from src.data_loader import get_data
 from src.models.models import build_logistic_model
@@ -45,9 +45,9 @@ def get_options():
 def fingerprint(seq, length):
     f = []
     for char in seq:
-        if len(f) <= int(length):
+        if len(f) < int(length):
             f.append(ord(char))
-    while len(f) <= int(length):
+    while len(f) < int(length):
         f.append(0)
     return f
 
@@ -83,8 +83,16 @@ def script(args_list, random_state=False, p_rparams=False):
         features.append(fingerprint(d, options.length))
     for l in data[2]:
         labels.append(int(l))
-    x_train, x, y_train, y = train_test_split(features, labels, test_size=0.2, random_state=random_state)
-    x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.8, random_state=random_state)
+        
+    x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.4, random_state=random_state)
+    x_val, y_val = [],[]
+    #x_train, x, y_train, y = train_test_split(features, labels, test_size=0.2, random_state=random_state)
+    #x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.8, random_state=random_state)
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+    print(x_train.shape)
+    input_shape = int(options.length)
+    output_shape = 1
     
     if options.gridsearch and not p_rparams:
         logger.info("GRID SEARCH")  
@@ -108,7 +116,7 @@ def script(args_list, random_state=False, p_rparams=False):
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "regression":
             search_model = KerasClassifier(build_fn=build_logistic_model, input_dim=input_shape, output_dim=output_shape)
-            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10, scoring=scoring, refit='MCC')
+            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10)
             rparams = grid.fit(x_train, y_train)
             model = build_residual_model(input_shape, output_shape, activation_0=rparams.get("activation_0", 'softmax'), activation_1=rparams.get("activation_0", 'softmax'), activation_2=rparams.get("activation_0", 'softmax'),
                                      loss=rparams.get("loss", 'binary_crossentropy'), metrics=rparams.get("metrics", ['accuracy']),
@@ -117,7 +125,7 @@ def script(args_list, random_state=False, p_rparams=False):
             search_model = KerasClassifier(build_fn=model, input_dim=input_shape, output_dim=output_shape)
         elif options.select_model[0] == "residual":
             search_model = KerasClassifier(build_fn=build_residual_model, input_dim=input_shape, output_dim=output_shape)
-            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10, scoring=scoring, refit='MCC')
+            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10)
             rparams = grid.fit(x_train, y_train)
             model = build_logistic_model(input_shape, output_shape, activation=rparams.get("activation"),
                                      loss=rparams.get("loss"), metrics=rparams.get("metrics"),
@@ -163,7 +171,7 @@ def script(args_list, random_state=False, p_rparams=False):
         logger.info("FIT")
 
         if options.select_model[0] == "regression" or options.select_model[0] == "residual":
-            history = model.fit(x_train, y_train, batch_size=rparams.get("batch_size"), epochs=epochs, validation_data=(x_val, y_val), shuffle=True, verbose=1, callbacks=callbacks_list)
+            history = model.fit(x_train, y_train, batch_size=rparams.get("batch_size"), epochs=epochs, shuffle=True, verbose=1, callbacks=callbacks_list)
         else:
             history = model.fit(x_train, y_train)
 
@@ -171,10 +179,24 @@ def script(args_list, random_state=False, p_rparams=False):
         rparams = model.cv_results_
 
     logger.info("EVALUATE")
-    train_acc, test_acc, rec = evaluate(logger, options, random_state, options.output, model, x_train, x_test, x_val, y_train, y_test, y_val, time_start, rparams, history, options.length[0], options.section[0], "", n_jobs=options.n_jobs)
-    return train_acc, test_acc, rparams, rec
+    try:
+        score = model.evaluate(x_test, y_test, batch_size=rparams.get("batch_size", 32), verbose=10)
+        logger.info('Score: %1.3f' % score[0])
+        logger.info('Accuracy: %1.3f' % score[1])
+    except:
+        y_pred_test = model.predict(x_test)
+        result = [round(value) for value in y_pred_test]
+
+        y_pred_train = model.predict(x_train)
+        p_train = [round(value) for value in y_pred_train]
+
+        accuracy = accuracy_score(y_test, result)*100
+        accuracy_train = accuracy_score(y_train, p_train)*100
+        logger.info("Accuracy test: %.2f%%" % (accuracy))
+        logger.info("Accuracy train: %.2f%%" % (accuracy_train))
+    #return train_acc, test_acc, rparams, rec
     
 
 if __name__ == "__main__":
-    args_list = ['knn', 'tmp/dataset.csv', 'KNN_TOX21', '--n_jobs', '-1', '--n_iter', '30', '-p', '2000', '--length', '512', '-g']
+    args_list = ['rf', 'tmp/dataset.csv', 'RF_TOX21', '--n_jobs', '-1', '--n_iter', '6', '-p', '2000', '--length', '450', '-g']
     script(args_list)
