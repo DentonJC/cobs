@@ -14,6 +14,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, IsolationForest 
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split
 from sklearn.metrics import matthews_corrcoef, make_scorer, accuracy_score, recall_score
+from sklearn.preprocessing import normalize, StandardScaler
+from sklearn.decomposition import PCA #
 from src.main import create_callbacks, read_config, evaluate, start_log
 from src.data_loader import get_data
 from src.models.models import build_logistic_model
@@ -27,18 +29,17 @@ formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s
 
 
 def get_options():
-    parser = argparse.ArgumentParser(prog="model data section")
+    parser = argparse.ArgumentParser(prog="model data")
     parser.add_argument('select_model', nargs='+', help='name of the model, select from list in README'),
     parser.add_argument('dataset_path', nargs='+', default=os.path.dirname(os.path.realpath(__file__)).replace("/src","") + '/tmp/dataset.csv', help='path to dataset'),
-    parser.add_argument('section', nargs='+', help='name of section in config file'),
     parser.add_argument('--output', default=os.path.dirname(os.path.realpath(__file__)).replace("/src", "") + "/tmp/" + str(datetime.now()) + '/', help='path to output directory'),
     parser.add_argument('--configs', default=os.path.dirname(os.path.realpath(__file__)) + "/configs.ini", help='path to config file'),
     parser.add_argument('--n_iter', default=6, type=int, help='number of iterations in RandomizedSearchCV'),
     parser.add_argument('--n_jobs', default=1, type=int, help='number of jobs'),
     parser.add_argument('--patience', '-p' , default=100, type=int, help='patience of fit'),
     parser.add_argument('--gridsearch', '-g', action='store_true', default=False, help='use gridsearch'),
-    parser.add_argument('--experiments_file', '-e', default='experiments.csv', help='where to write results of experiments')
-    parser.add_argument('--length', default=256, help='max length of sequence')
+    parser.add_argument('--experiments_file', '-e', default='etc/experiments.csv', help='where to write results of experiments')
+    parser.add_argument('--length', '-l', default='256', type=int, help='maximum length of sequences')
     return parser
 
 
@@ -50,9 +51,9 @@ def fingerprint(seq, length):
     while len(f) < int(length):
         f.append(0)
     return f
+    
 
-
-def script(args_list, random_state=False, p_rparams=False): 
+def script(args_list, random_state=False, p_rparams=False):
     scoring = "accuracy"
     time_start = datetime.now()
     if len(sys.argv) > 1:
@@ -73,17 +74,25 @@ def script(args_list, random_state=False, p_rparams=False):
     logger.addHandler(handler)
 
     #logging.basicConfig(filename=options.output+'main.log', level=logging.INFO)
-    n_folds, epochs, rparams, gparams = read_config(options.configs, options.section[0])
+    n_folds, epochs, rparams, gparams = read_config(options.configs, options.select_model[0])
     data = pd.read_csv(options.dataset_path[0])
     data = np.array(data)
     data = data.T
+    
     labels = []
     features = []
+    length = len(max(data[1], key=len))
+    if length > options.length: length = options.length
     for d in data[1]:
-        features.append(fingerprint(d, options.length))
+        features.append(fingerprint(d, length))
     for l in data[2]:
         labels.append(int(l))
-        
+    
+
+    #features = normalize(features, axis=1)
+    #pca = PCA(n_components = 256)
+    #features = pca.fit_transform(features)
+    #features = StandardScaler().fit_transform(features)
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.4, random_state=random_state)
     x_val, y_val = [],[]
     #x_train, x, y_train, y = train_test_split(features, labels, test_size=0.2, random_state=random_state)
@@ -91,7 +100,7 @@ def script(args_list, random_state=False, p_rparams=False):
     x_train = np.array(x_train)
     y_train = np.array(y_train)
     print(x_train.shape)
-    input_shape = int(options.length)
+    input_shape = int(length)
     output_shape = 1
     
     if options.gridsearch and not p_rparams:
@@ -101,9 +110,6 @@ def script(args_list, random_state=False, p_rparams=False):
             model = RandomizedSearchCV(LogisticRegression(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, scoring="accuracy")
         elif options.select_model[0] == "knn":
             model = RandomizedSearchCV(KNeighborsClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10,
-                                       scoring=scoring, refit='MCC')
-        elif options.select_model[0] == "xgb" and xgb_flag:
-            model = RandomizedSearchCV(xgb.XGBClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, 
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "svc":
             model = RandomizedSearchCV(SVC(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, 
@@ -177,26 +183,11 @@ def script(args_list, random_state=False, p_rparams=False):
 
     if options.gridsearch and not p_rparams:
         rparams = model.cv_results_
-
-    logger.info("EVALUATE")
-    try:
-        score = model.evaluate(x_test, y_test, batch_size=rparams.get("batch_size", 32), verbose=10)
-        logger.info('Score: %1.3f' % score[0])
-        logger.info('Accuracy: %1.3f' % score[1])
-    except:
-        y_pred_test = model.predict(x_test)
-        result = [round(value) for value in y_pred_test]
-
-        y_pred_train = model.predict(x_train)
-        p_train = [round(value) for value in y_pred_train]
-
-        accuracy = accuracy_score(y_test, result)*100
-        accuracy_train = accuracy_score(y_train, p_train)*100
-        logger.info("Accuracy test: %.2f%%" % (accuracy))
-        logger.info("Accuracy train: %.2f%%" % (accuracy_train))
-    #return train_acc, test_acc, rparams, rec
     
+    accuracy, accuracy_train, rec = evaluate(logger, options, random_state, options.output, model, x_train, x_test, x_val, y_train, y_test, y_val, time_start, rparams, history, data, options.select_model[0], features, options.n_jobs)
+    return accuracy_train, accuracy, rparams, rec
+
 
 if __name__ == "__main__":
-    args_list = ['rf', 'tmp/dataset.csv', 'RF_TOX21', '--n_jobs', '-1', '--n_iter', '6', '-p', '2000', '--length', '450', '-g']
+    args_list = ['logreg', 'data/dataset.csv', '--n_jobs', '-1', '--n_iter', '6', '-p', '2000', '--length', '256', '-g']
     script(args_list)

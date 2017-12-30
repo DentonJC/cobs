@@ -1,0 +1,7 @@
+Model,Data,n_jobs,Patience,Gridsearch,n_iter,Length,train acc,test acc 
+logreg,data/dataset.csv,-1,500,True,60,1024,0.9442071281833894,0.7583608500550334
+rf,data/dataset.csv,-1,500,True,6,1024,0.9836958293931588,0.8685124036914741
+xgb,data/dataset.csv,-1,500,True,30,1024,,
+regression,data/dataset.csv,-1,500,True,30,1024,,
+residual,data/dataset.csv,-1,500,True,30,1024,,
+knn,data/dataset.csv,-1,500,True,30,1024,,

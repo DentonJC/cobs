@@ -18,3 +18,12 @@ The project goal is to develop a framework for the classification of biochemical
 ## Example input
 
 ## Example output
+
+## Datasets
+Used:
+  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/plastid/
+  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/
+Tested:
+  - https://www.ncbi.nlm.nih.gov/unigene/?term=human[organism]
+  - ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/bacteria/
+  - ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/archaea/
