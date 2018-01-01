@@ -3,26 +3,24 @@
 
 """
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
 
 
-DATA_PATH = os.path.dirname(os.path.realpath(__file__)).replace("/src","")
-DATASET_PATH = os.path.dirname(os.path.realpath(__file__)).replace("/src","")
+def get_options():
+    parser = argparse.ArgumentParser(prog="model data")
+    parser.add_argument('dataset_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src",""), help='path to dataset'),
+    parser.add_argument('data_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src",""), help='path to search config'),
+    return parser
 
 
-if not os.path.exists(DATA_PATH):
-    os.makedirs(DATA_PATH)
-if not os.path.exists(DATASET_PATH):
-    os.makedirs(DATASET_PATH)
-
-
-def local():
+def local(data_path):
     features = []
     labels = []
     files = []
-    all_files = os.listdir(DATA_PATH)
+    all_files = os.listdir(data_path)
 
     for f in all_files:
         if ".faa" in f: files.append(f)
@@ -31,7 +29,7 @@ def local():
 
     label = 0
     for f in files:
-        records = list(SeqIO.parse(DATA_PATH + '/' + f, "fasta"))
+        records = list(SeqIO.parse(data_path + '/' + f, "fasta"))
         for r in records:
             features.append(str(r.seq))            
             labels.append(label)
@@ -43,9 +41,15 @@ def local():
 
     print("Creating dataset complete")
     return data
-    
+
 
 if __name__ == "__main__":
-    data = local()
+    options = get_options().parse_args()
+    
+    if not os.path.exists(options.data_path):
+        os.makedirs(options.data_path)
+    if not os.path.exists(options.dataset_path):
+        os.makedirs(options.dataset_path)
+    data = local(options.data_path)
     df = pd.DataFrame(data)
-    df.to_csv(DATASET_PATH + '/' + "dataset.csv")
+    df.to_csv(options.dataset_path + '/' + "dataset.csv")

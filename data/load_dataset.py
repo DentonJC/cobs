@@ -3,21 +3,30 @@
 
 """
 import os
+import argparse
+import configparser
 import multiprocessing
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed  
 from Bio import Entrez
 from Bio import SeqIO
-
-
-SEARCH = [['rhodopsin', 0, 10], ['MHC', 1, 10], ['hemoglobin', 2, 10]]
+config = configparser.ConfigParser()
 Entrez.email = "your@mail.com"
-DATASET_PATH = os.path.dirname(os.path.realpath(__file__)).replace("/src","")
 
 
-if not os.path.exists(DATASET_PATH):
-    os.makedirs(DATASET_PATH)
+def get_options():
+    parser = argparse.ArgumentParser(prog="model data")
+    parser.add_argument('dataset_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src",""), help='path to dataset'),
+    parser.add_argument('search_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src","") + '/search.ini', help='path to search config'),
+    return parser
+
+
+def read_config(search_path):
+    config.read(search_path)
+    def_config = config['DEFAULT']
+    SEARCH = eval(def_config['SEARCH'])
+    return SEARCH
 
 
 def database(item, label, length):
@@ -45,11 +54,23 @@ def database(item, label, length):
     return data
 
 
-if __name__ == "__main__":
+def main():
+    options = get_options().parse_args()
+    dataset_path = str(options.dataset_path)
+    print(dataset_path)
+
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+    
     num_cores = multiprocessing.cpu_count()
     data = []
-    data.append(Parallel(n_jobs=num_cores, verbose=5)(delayed(database)(items, label, length) for (items, label, length) in SEARCH)
+    search = read_config(options.search_path)
+    print(search)
+    data.append(Parallel(n_jobs=num_cores, verbose=5)(delayed(database)(items, label, length) for (items, label, length) in search))
     data = np.c_[data[0][0].T, data[0][1].T]
     data = data.T
     df = pd.DataFrame(data)
-    df.to_csv(DATASET_PATH + '/' + "dataset.csv")
+    df.to_csv(dataset_path + '/' + "dataset.csv")
+
+if __name__ == "__main__":
+    main()

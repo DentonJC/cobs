@@ -184,8 +184,8 @@ def script(args_list, random_state=False, p_rparams=False):
     if options.gridsearch and not p_rparams:
         rparams = model.cv_results_
     
-    accuracy, accuracy_train, rec = evaluate(logger, options, random_state, options.output, model, x_train, x_test, x_val, y_train, y_test, y_val, time_start, rparams, history, data, options.select_model[0], features, options.n_jobs)
-    return accuracy_train, accuracy, rparams, rec
+    accuracy_test, accuracy_train, rec, auc, f1 = evaluate(logger, options, random_state, options.output, model, x_train, x_test, x_val, y_train, y_test, y_val, time_start, rparams, history, data, options.select_model[0], features, options.n_jobs)
+    return accuracy_test, accuracy_train, rec, auc, f1, rparams
 
 
 if __name__ == "__main__":
