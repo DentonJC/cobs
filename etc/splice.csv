@@ -1,5 +1,5 @@
 Model,Data,n_jobs,Patience,Gridsearch,n_iter,Length,train acc,test acc 
-logreg,data/dataset_splice.csv,-1,500,True,60,256,89.9164054336468,87.8526645768025
-rf,data/dataset_splice.csv,-1,500,True,6,256,99.8955067920585,92.5548589341693
-svc,data/dataset_splice.csv,-1,500,True,20,256,100,88.5579937304075
-knn,data/dataset_splice.csv,-1,500,True,20,256,100,86.128526645768
+logreg,data/dataset_splice.csv,-1,500,True,60,256,89.91640543364682,87.85266457680252
+rf,data/dataset_splice.csv,-1,500,True,6,256,100.0,92.86833855799374
+svc,data/dataset_splice.csv,-1,500,True,20,256,,
+knn,data/dataset_splice.csv,-1,500,True,20,256,,

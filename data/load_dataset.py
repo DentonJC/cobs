@@ -12,13 +12,14 @@ from joblib import Parallel, delayed
 from Bio import Entrez
 from Bio import SeqIO
 config = configparser.ConfigParser()
-Entrez.email = "your@mail.com"
+
 
 
 def get_options():
     parser = argparse.ArgumentParser(prog="model data")
     parser.add_argument('dataset_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src",""), help='path to dataset'),
     parser.add_argument('search_path', nargs='?', default=os.path.dirname(os.path.realpath(__file__)).replace("/src","") + '/search.ini', help='path to search config'),
+    parser.add_argument('emai', default="your@mail.com", help='your email')
     return parser
 
 
@@ -56,16 +57,16 @@ def database(item, label, length):
 
 def main():
     options = get_options().parse_args()
-    dataset_path = str(options.dataset_path)
-    print(dataset_path)
+    Entrez.email = options.email
 
-    if not os.path.exists(dataset_path):
-        os.makedirs(dataset_path)
+    if not os.path.exists(options.dataset_path):
+        os.makedirs(options.dataset_path)
     
     num_cores = multiprocessing.cpu_count()
     data = []
     search = read_config(options.search_path)
     print(search)
+    return 0
     data.append(Parallel(n_jobs=num_cores, verbose=5)(delayed(database)(items, label, length) for (items, label, length) in search))
     data = np.c_[data[0][0].T, data[0][1].T]
     data = data.T

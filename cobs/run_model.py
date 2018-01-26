@@ -16,10 +16,9 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test
 from sklearn.metrics import matthews_corrcoef, make_scorer, accuracy_score, recall_score
 from sklearn.preprocessing import normalize, StandardScaler
 from sklearn.decomposition import PCA #
-from src.main import create_callbacks, read_config, evaluate, start_log
+from src.main import read_model_config, evaluate, start_log
 from src.data_loader import get_data
-from src.models.models import build_logistic_model
-from src.models.models import build_residual_model
+from src.models.keras_models import Residual, Perceptron, create_callbacks
 from keras.wrappers.scikit_learn import KerasClassifier
 
 
@@ -31,15 +30,17 @@ formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s
 def get_options():
     parser = argparse.ArgumentParser(prog="model data")
     parser.add_argument('select_model', nargs='+', help='name of the model, select from list in README'),
-    parser.add_argument('dataset_path', nargs='+', default=os.path.dirname(os.path.realpath(__file__)).replace("/src","") + '/tmp/dataset.csv', help='path to dataset'),
-    parser.add_argument('--output', default=os.path.dirname(os.path.realpath(__file__)).replace("/src", "") + "/tmp/" + str(datetime.now()) + '/', help='path to output directory'),
+    parser.add_argument('dataset_path', nargs='+', default=os.path.dirname(os.path.realpath(__file__)).replace("/cobs","") + '/tmp/dataset.csv', help='path to dataset'),
+    parser.add_argument('--output', default=os.path.dirname(os.path.realpath(__file__)).replace("/cobs", "") + "/tmp/" + str(datetime.now()) + '/', help='path to output directory'),
     parser.add_argument('--configs', default=os.path.dirname(os.path.realpath(__file__)) + "/configs.ini", help='path to config file'),
     parser.add_argument('--n_iter', default=6, type=int, help='number of iterations in RandomizedSearchCV'),
     parser.add_argument('--n_jobs', default=1, type=int, help='number of jobs'),
+    parser.add_argument('--n_folds', default=5, type=int, help='number of splits in RandomizedSearchCV'),
     parser.add_argument('--patience', '-p' , default=100, type=int, help='patience of fit'),
     parser.add_argument('--gridsearch', '-g', action='store_true', default=False, help='use gridsearch'),
     parser.add_argument('--experiments_file', '-e', default='etc/experiments.csv', help='where to write results of experiments')
-    parser.add_argument('--length', '-l', default='256', type=int, help='maximum length of sequences')
+    parser.add_argument('--length', '-l', default='256', type=int, help='maximum length of sequences'),
+    parser.add_argument('--targets', '-t', default=0, type=int, help='set number of target column')
     return parser
 
 
@@ -53,7 +54,7 @@ def fingerprint(seq, length):
     return f
     
 
-def script(args_list, random_state=False, p_rparams=False):
+def run(args_list, random_state=False, p_rparams=False):
     scoring = "accuracy"
     time_start = datetime.now()
     if len(sys.argv) > 1:
@@ -74,7 +75,7 @@ def script(args_list, random_state=False, p_rparams=False):
     logger.addHandler(handler)
 
     #logging.basicConfig(filename=options.output+'main.log', level=logging.INFO)
-    n_folds, epochs, rparams, gparams = read_config(options.configs, options.select_model[0])
+    epochs, rparams, gparams = read_model_config(options.configs, options.select_model[0])
     data = pd.read_csv(options.dataset_path[0])
     data = np.array(data)
     data = data.T
@@ -94,7 +95,6 @@ def script(args_list, random_state=False, p_rparams=False):
     #features = pca.fit_transform(features)
     #features = StandardScaler().fit_transform(features)
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.4, random_state=random_state)
-    x_val, y_val = [],[]
     #x_train, x, y_train, y = train_test_split(features, labels, test_size=0.2, random_state=random_state)
     #x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.8, random_state=random_state)
     x_train = np.array(x_train)
@@ -104,25 +104,32 @@ def script(args_list, random_state=False, p_rparams=False):
     output_shape = 1
     
     if options.gridsearch and not p_rparams:
+        # check if the number of iterations more then possible combinations
+        keys = list(gparams.keys())
+        n_iter = 1
+        for k in keys:
+            n_iter*=len(gparams[k])
+        if options.n_iter > n_iter: options.n_iter = n_iter
+        
         logger.info("GRID SEARCH")  
         
         if options.select_model[0] == "logreg":
-            model = RandomizedSearchCV(LogisticRegression(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, scoring="accuracy")
+            model = RandomizedSearchCV(LogisticRegression(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=options.n_folds, verbose=10, scoring="accuracy")
         elif options.select_model[0] == "knn":
-            model = RandomizedSearchCV(KNeighborsClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10,
+            model = RandomizedSearchCV(KNeighborsClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=options.n_folds, verbose=10,
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "svc":
-            model = RandomizedSearchCV(SVC(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, 
+            model = RandomizedSearchCV(SVC(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=options.n_folds, verbose=10, 
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "rf":
-            model = RandomizedSearchCV(RandomForestClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, 
+            model = RandomizedSearchCV(RandomForestClassifier(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=options.n_folds, verbose=10, 
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "if":
-            model = RandomizedSearchCV(IsolationForest(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=n_folds, verbose=10, 
+            model = RandomizedSearchCV(IsolationForest(**rparams), gparams, n_iter=options.n_iter, n_jobs=options.n_jobs, cv=options.n_folds, verbose=10, 
                                        scoring=scoring, refit='MCC')
         elif options.select_model[0] == "regression":
             search_model = KerasClassifier(build_fn=build_logistic_model, input_dim=input_shape, output_dim=output_shape)
-            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10)
+            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=options.n_folds, n_iter=options.n_iter, verbose=10)
             rparams = grid.fit(x_train, y_train)
             model = build_residual_model(input_shape, output_shape, activation_0=rparams.get("activation_0", 'softmax'), activation_1=rparams.get("activation_0", 'softmax'), activation_2=rparams.get("activation_0", 'softmax'),
                                      loss=rparams.get("loss", 'binary_crossentropy'), metrics=rparams.get("metrics", ['accuracy']),
@@ -131,7 +138,7 @@ def script(args_list, random_state=False, p_rparams=False):
             search_model = KerasClassifier(build_fn=model, input_dim=input_shape, output_dim=output_shape)
         elif options.select_model[0] == "residual":
             search_model = KerasClassifier(build_fn=build_residual_model, input_dim=input_shape, output_dim=output_shape)
-            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=n_folds, n_iter=options.n_iter, verbose=10)
+            grid = RandomizedSearchCV(estimator=search_model, param_distributions=gparams, n_jobs=options.n_jobs, cv=options.n_folds, n_iter=options.n_iter, verbose=10)
             rparams = grid.fit(x_train, y_train)
             model = build_logistic_model(input_shape, output_shape, activation=rparams.get("activation"),
                                      loss=rparams.get("loss"), metrics=rparams.get("metrics"),
@@ -184,10 +191,10 @@ def script(args_list, random_state=False, p_rparams=False):
     if options.gridsearch and not p_rparams:
         rparams = model.cv_results_
     
-    accuracy_test, accuracy_train, rec, auc, f1 = evaluate(logger, options, random_state, options.output, model, x_train, x_test, x_val, y_train, y_test, y_val, time_start, rparams, history, data, options.select_model[0], features, options.n_jobs)
+    accuracy_test, accuracy_train, rec, auc, f1 = evaluate(logger, options, random_state, options.output, model, x_train, x_test, y_train, y_test, time_start, rparams, history, data, options.select_model[0], features, options.n_jobs)
     return accuracy_test, accuracy_train, rec, auc, f1, rparams
 
 
 if __name__ == "__main__":
-    args_list = ['logreg', 'data/dataset.csv', '--n_jobs', '-1', '--n_iter', '6', '-p', '2000', '--length', '256', '-g']
-    script(args_list)
+    args_list = ['logreg', 'data/dataset.csv']
+    run(args_list)

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 """
-An additional script to run a series of experiments described in the .csv file.
+An additional script to run a series of experiments described in table like etc/experiments.csv where columns are hyperparameters and rows are experiments.
 """
 import os
 import math
 import random
 import pandas as pd
-from run_model import script
+from cobs.run_model import run
 
 
 def isnan(x):
@@ -17,7 +17,7 @@ def isnan(x):
 
 def main(experiments_file, common_gridsearch, random_state, n_cols):
     """
-    Checks the rows of experiments_file in a loop. If there are no results in the row (pure fields after len(cols)), 
+    Checks the rows of experiments_file in a loop. If there are no results in the row (empty fields after len(cols)), 
     it takes the attributes from the columns and calls the script command until all result fields are filled with step n_cols.
     """
     if not random_state:
@@ -62,13 +62,61 @@ def main(experiments_file, common_gridsearch, random_state, n_cols):
                 table.to_csv(experiments_file, index=False)  # add results to experiments table
 
 
+def main(experiments_file, common_gridsearch, random_state, n_cols):
+    """
+    Checks the rows of experiments_file in a loop. If there are no results in the row (pure fields after len(cols)), 
+    it takes the attributes from the columns and calls the experiment function until all result fields are filled with step n_cols.
+    """
+    if not random_state:
+        random_state = random.randint(1, 1000)
+
+    table = pd.read_csv(experiments_file)
+    keys = ["--n_jobs ", "-p ", "-g ", "--n_iter ", "--length ", "--n_folds "]
+    params = ["n_jobs", "Patience", "Gridsearch", "n_iter", "Length" , "Split"]
+    pos_params = ['Model', 'Data']
+    for i in range(table.shape[0]):
+        rparams = False
+        command = ""
+        for p in pos_params:
+            command += str(table[p][i]) + " "
+        
+        for c, p in enumerate(params):
+            if not isnan(table[p][i]):
+                if keys[c] in ["-g "]:
+                    command += keys[c] + " "
+                else:
+                    command += keys[c] + str(table[p][i]) + " "
+        
+        command_base = command + "-e " + experiments_file
+        
+        print(command_base)
+        
+        for j in range(int(((table.shape[1] - len(params) - len(pos_params)) / n_cols))):
+            accuracy_test = accuracy_train = rec = auc = f1 = '-'
+            command = command_base + " -t " + str(j)
+            command_f = command.split()
+            print(command_f)
+            if isnan(table.iloc[i, j*n_cols + len(params) + len(pos_params)]):    
+                if common_gridsearch:
+                    accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command_f, random_state, rparams)
+                else:
+                    accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command_f, random_state, False)
+
+                table = pd.read_csv(experiments_file)
+                table.iloc[i, j*n_cols+len(params) + len(pos_params)] = rec[0]
+                table.iloc[i, j*n_cols+1+len(params) + len(pos_params)] = rec[1]
+                table.iloc[i, j*n_cols+2+len(params) + len(pos_params)] = auc
+                table.to_csv(experiments_file, index=False)  # add results to experiments table
+
+
+
 if __name__ == "__main__":
     common_gridsearch = False # one gridsearch for all experiments in row
     random_state = 13 # random state of train-test split
     n_cols = 2  # n columns of results per target in table
 
-    def_experiments_file = 'etc/experiments_splice.csv' # path to experiments table
-    experiments_file = input('Enter the image address (default is ' + def_experiments_file + '): ')
+    def_experiments_file = 'etc/experiments.csv' # path to experiments table
+    experiments_file = input('Enter the experiment table address (default is ' + def_experiments_file + '): ')
     if experiments_file == '': experiments_file = def_experiments_file
 
     main(experiments_file, common_gridsearch, random_state, n_cols)
