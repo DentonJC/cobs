@@ -95,27 +95,14 @@ Report complete, you can see it in the results folder  <br />
 2. Run data/load_dataset.py
 
 ## Results <a name="results"></a>
-### Protein classification: plastid vs mitochondrion
-Class Distribution:
-- plastids 76532 (72%)
-- mitochondrions 29660 (28%)
-
-length of sequences: 256
-
-Model | train accuracy | test accuracy
---- | --- | ---
-regression  | |
-random forest | |
-KNN | |
-CSV | |
-
 ### DNA classification: Promoter Gene Sequences
 Class Distribution:
 - positive instances: 53 (50%)
 - negative instances: 53 (50%)
-Train 70%
-Val 9%
-Test 21%
+
+Train 70% </br>
+Val 9% </br>
+Test 21% </br>
 
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_1.png" />
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_1.png" />
@@ -134,9 +121,10 @@ Class Distribution:
 - EI:       767  (25%)
 - IE:       768  (25%)
 - Neither: 1655  (50%)
-Train 70%
-Val 9%
-Test 21%
+
+Train 70% </br>
+Val 9% </br>
+Test 21% </br>
 
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_2.png" />
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_2.png" />
