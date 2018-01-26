@@ -22,7 +22,7 @@ from sklearn.preprocessing import normalize, StandardScaler
 from sklearn.decomposition import PCA
 from src.main import read_model_config, evaluate, start_log
 from src.data_loader import get_data
-from src.models.keras_models import Residual, Perceptron, create_callbacks
+from src.models.keras_models import Residual, Perceptron, create_callbacks, MultilayerPerceptron
 from keras.wrappers.scikit_learn import KerasClassifier
 import xgboost as xgb
 
@@ -206,6 +206,16 @@ def run(args_list, random_state=False, p_rparams=False):
                                        scoring=scoring)
         elif options.select_model[0] == "perceptron":
             search_model = KerasClassifier(build_fn=Perceptron,
+                                           input_shape=input_shape,
+                                           output_shape=output_shape)
+            model = RandomizedSearchCV(estimator=search_model,
+                                      param_distributions=gparams,
+                                      n_jobs=options.n_jobs,
+                                      cv=options.n_folds,
+                                      n_iter=options.n_iter,
+                                      verbose=10)
+        elif options.select_model[0] == "mperceptron":
+            search_model = KerasClassifier(build_fn=MultilayerPerceptron,
                                            input_shape=input_shape,
                                            output_shape=output_shape)
             model = RandomizedSearchCV(estimator=search_model,
