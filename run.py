@@ -66,9 +66,8 @@ def main(experiments_file, common_gridsearch, random_state, n_cols):
                     accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command, random_state, False)
 
                 table = pd.read_csv(experiments_file)
-                table.iloc[i, j*n_cols+len(params) + len(pos_params)] = rec[0]
-                table.iloc[i, j*n_cols+1+len(params) + len(pos_params)] = rec[1]
-                table.iloc[i, j*n_cols+2+len(params) + len(pos_params)] = auc
+                table.iloc[i, j*n_cols+len(params) + len(pos_params)] = accuracy_test
+                table.iloc[i, j*n_cols+1+len(params) + len(pos_params)] = accuracy_train
                 table.to_csv(experiments_file, index=False)
 
 
