@@ -1,5 +1,5 @@
 Model,Data,n_jobs,Patience,Gridsearch,n_iter,Length,Split,train acc,test acc 
-logreg,data/dataset.csv,-1,500,True,60,128,10,,
-rf,data/dataset.csv,-1,500,True,6,128,10,99.978027152162,96.7441969960921
+logreg,data/dataset.csv,-1,500,True,3,128,3,,
+rf,data/dataset.csv,-1,500,True,6,128,3,99.978027152162,96.7441969960921
 knn,data/dataset.csv,-1,500,True,15,128,3,,
 svc,data/dataset.csv,-1,500,True,15,128,3,,
