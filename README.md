@@ -113,26 +113,42 @@ CSV | |
 Class Distribution:
 - positive instances: 53 (50%)
 - negative instances: 53 (50%)
+Train 70%
+Val 9%
+Test 21%
+
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE2_1.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE3_1.png" />
 
 Model | train accuracy | test accuracy
 --- | --- | ---
-regression  | 100 | 86.04
-random forest | 100 | 88.37
-KNN | 100 | 81.39
-CSV | 100 | 79.06
+regression  | 89.56 | 88.34
+random forest | 100 | 93.27
+SVC | 100 | 89.38
+IF | 17.73 | 20.62
+KNN | 100 | 87.44
+
 
 ### DNA classification: Splice-junction Gene Sequences
 Class Distribution:
 - EI:       767  (25%)
 - IE:       768  (25%)
 - Neither: 1655  (50%)
+Train 70%
+Val 9%
+Test 21%
+
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE2_2.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE3_2.png" />
 
 Model | train accuracy | test accuracy
 --- | --- | ---
-regression  | 89.91 | 87.85
-random forest | 99.89 | 92.55
-KNN | 100 | 88.55
-CSV | 100 | 86.12
+regression  | 100 | 77.27
+random forest | 97.29 | 86.36
+SVC | 100 | 72.72
+IF | 48.64 | 27.27
+KNN | 100 | 77.27
+
 
 ## Resources <a name="resources"></a>
 Used:

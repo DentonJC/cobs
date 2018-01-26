@@ -131,8 +131,8 @@ def run(args_list, random_state=False, p_rparams=False):
 
     # Dataset processing
 
-    x_train, x, y_train, y = train_test_split(features, labels, test_size=0.2, random_state=random_state)
-    x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.8, random_state=random_state)
+    x_train, x, y_train, y = train_test_split(features, labels, test_size=0.3, random_state=random_state)
+    x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.3, random_state=random_state)
     x_test = np.array(x_test)
     y_test = np.array(y_test)
     x_train = np.array(x_train)
