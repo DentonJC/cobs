@@ -90,12 +90,12 @@ def run(args_list, random_state=False, p_rparams=False):
     Output
     ------
     Result of experiment in metrics:
-        accuracy_test: string
-        accuracy_train: string
+        accuracy_test: float
+        accuracy_train: float
         rec: list
-        auc: string
-        auc_val: string
-        f1: string
+        auc: float
+        auc_val: float
+        f1: float
     """
     scoring = "accuracy"
     time_start = datetime.now()
