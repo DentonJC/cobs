@@ -1,0 +1,9 @@
+Model,Data,Jobs,Patience,Gridsearch,Iter,Length,Split,train acc,test acc 
+logreg,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+rf,data/dataset.csv,+AC0-1,500,True,3,10,3,93.8309394866965,98.2625891659015
+svc,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+xgb,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+if,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+residual,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+perceptron,data/dataset.csv,+AC0-1,500,True,3,10,3,,
+knn,data/dataset.csv,+AC0-1,500,True,3,10,3,,

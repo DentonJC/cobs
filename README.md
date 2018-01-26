@@ -4,16 +4,14 @@ Classification of biochemical sequences
 The project goal is to develop a framework for the classification of biochemical sequences using tools from the scikit-learn package and other models like LSTM or Sequence-to-Sequence, which shows a good result on text strings. Working with sequences like fasta will be the subject of study.
 
 Models available:
-- KNN
-- Logistic regression
-- Linear regression
-- RandomForestClassifier
-- SVC
-- XGBClassifier
-- Isolation Forest
-- ResidualNN
-- Perceptron
-- Multilayer perceptron
+- KNN (knn)
+- Logistic regression (logreg)
+- RandomForestClassifier (rf)
+- SVC (svc)
+- Isolation Forest (if)
+- ResidualNN (residual)
+- Perceptron (perceptron)
+- Multilayer perceptron (m_perceptron)
 
 Models in progress:
 - LSTM
@@ -22,6 +20,8 @@ Models in progress:
 Use cobs/config.ini to configure the models.
 - rparams for basic configuration
 - gparams for randomized search configuration
+
+KNOWN BUG in Parallel: need to restart script after using keras model in experiments table.
 
 ## Table of Contents
 1. [Install](#install)

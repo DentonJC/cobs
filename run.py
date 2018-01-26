@@ -30,14 +30,14 @@ def main(experiments_file, common_gridsearch, random_state, n_cols):
     common_gridsearch: bool
         one gridsearch for all experiments in row
     random_state: int
-        random state of all   
+        random state of all
     """
     if not random_state:
         random_state = random.randint(1, 1000)
 
     table = pd.read_csv(experiments_file)
     keys = ["--n_jobs ", "-p ", "-g ", "--n_iter ", "--length ", "--n_folds "]
-    params = ["n_jobs", "Patience", "Gridsearch", "n_iter", "Length", "Split"]
+    params = ["Jobs", "Patience", "Gridsearch", "Iter", "Length", "Split"]
     pos_params = ['Model', 'Data']
     for i in range(table.shape[0]):
         rparams = False
