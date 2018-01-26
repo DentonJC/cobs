@@ -117,8 +117,8 @@ Train 70%
 Val 9%
 Test 21%
 
-<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE2_1.png" />
-<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE3_1.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_1.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_1.png" />
 
 Model | train accuracy | test accuracy
 --- | --- | ---
@@ -138,8 +138,8 @@ Train 70%
 Val 9%
 Test 21%
 
-<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE2_2.png" />
-<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t_SNE3_2.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_2.png" />
+<img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_2.png" />
 
 Model | train accuracy | test accuracy
 --- | --- | ---
