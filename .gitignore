@@ -2,6 +2,7 @@ push.sh
 /tmp
 .gitignore
 *~*
+*#
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

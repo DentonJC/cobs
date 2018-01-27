@@ -41,6 +41,11 @@ KNOWN BUG in Parallel: need to restart script after using keras model in experim
 - Conda (https://www.anaconda.com/download/#linux)
 - conda install --file requirements
 
+Already installed for virtual_screening:
+- Python3: pip install configparser
+- Python2: pip install ConfigParser
+- pip install argparse
+
 ## Usage <a name="usage"></a>
 
     usage: Classification of biochemical sequences
