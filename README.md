@@ -1,7 +1,7 @@
 # COBS
 Classification of biochemical sequences
 
-The project goal is to develop a framework for the classification of biochemical sequences using tools from the scikit-learn package and other models like LSTM or Sequence-to-Sequence, which shows a good result on text strings. Working with sequences like fasta will be the subject of study.
+The project goal is to develop a framework for the classification of biochemical sequences. Working with sequences like fasta will be the subject of study.
 
 Models available:
 - KNN (knn)
@@ -11,15 +11,15 @@ Models available:
 - Isolation Forest (if)
 - ResidualNN (residual)
 - Perceptron (perceptron)
-- Multilayer perceptron (m_perceptron)
+- Multilayer perceptron (mperceptron)
 
 Models in progress:
 - LSTM
 - RNN
 
 Use cobs/config.ini to configure the models.
-- rparams for basic configuration
-- gparams for randomized search configuration
+- rparams (type: dictionary) for basic configuration
+- gparams (type: dictionary) for randomized search configuration
 
 KNOWN BUG in Parallel: need to restart script after using keras model in experiments table.
 
@@ -36,17 +36,24 @@ KNOWN BUG in Parallel: need to restart script after using keras model in experim
 - Linux
 - Python 3.6 or 2.7
 - Install https://github.com/DentonJC/virtual_screening
-- run env.sh
+- source virtual_screening/env.sh
+  - or add virtual_screening to PATH
 - Conda (https://www.anaconda.com/download/#linux)
 - conda install --file requirements
 
 ## Usage <a name="usage"></a>
 
-    usage: select_model dataset_path [-h] [--output OUTPUT] [--configs CONFIGS] [--n_iter N_ITER]
-                  [--n_jobs N_JOBS] [--patience PATIENCE] [--gridsearch]
-                  [--experiments_file EXPERIMENTS_FILE] [--length LENGTH]
-                  select_model [select_model ...] dataset_path
-                  [dataset_path ...]
+    usage: Classification of biochemical sequences
+                  [-h] [--output OUTPUT]
+                  [--configs CONFIGS]
+                  [--n_iter N_ITER]
+                  [--n_jobs N_JOBS]
+                  [--patience PATIENCE]
+                  [--gridsearch]
+                  [--experiments_file EXPERIMENTS_FILE]
+                  [--length LENGTH]
+                  select_model [select_model ...]
+                  dataset_path [dataset_path ...]
 
     positional arguments:
     select_model          name of the model, select from list in README
@@ -59,14 +66,14 @@ KNOWN BUG in Parallel: need to restart script after using keras model in experim
     --n_iter N_ITER       number of iterations in RandomizedSearchCV
     --n_jobs N_JOBS       number of jobs
     --patience PATIENCE, -p PATIENCE    patience of fit
-    --gridsearch, -g      use gridsearch
+    --gridsearch, -g      use RandomizedSearchCV
     --experiments_file EXPERIMENTS_FILE, -e EXPERIMENTS_FILE address where to write results of experiments
     --length LENGTH, -l LENGTH    maximum length of sequences
     --targets TARGETS, -t TARGETS    set number of target column
 
 ## Example input <a name="input"></a>
 #### Single experiment:
-python cobs/run_model.py logreg data/dataset.csv --n_jobs -1 --n_iter 6 -p 2000 --length 256 -g
+python cobs/run_model.py logreg data/dataset.csv --n_jobs -1 --n_iter 6 --length 256 -g
 #### Table of experiments:
 1. Fill in the table with experiments parameters (examples in /etc, False = empty cell)
 2. Run python run.py
@@ -94,15 +101,22 @@ Report complete, you can see it in the results folder  <br />
 1. Configure search.ini: select requests and name of labels
 2. Run data/load_dataset.py
 
+##### Use dataset from the "wild"
+1. First row is headers
+2. First column is indexes
+3. Second column is sequences
+4. Third column is classes
+
 ## Results <a name="results"></a>
 ### DNA classification: Promoter Gene Sequences
 Class Distribution:
 - positive instances: 53 (50%)
 - negative instances: 53 (50%)
 
-Train 70% </br>
-Val 9% </br>
-Test 21% </br>
+Random split:
+- Train 70% </br>
+- Val 9% </br>
+- Test 21% </br>
 
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_1.png" />
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_1.png" />
@@ -122,9 +136,10 @@ Class Distribution:
 - IE:       768  (25%)
 - Neither: 1655  (50%)
 
-Train 70% </br>
-Val 9% </br>
-Test 21% </br>
+Random split:
+- Train 70% </br>
+- Val 9% </br>
+- Test 21% </br>
 
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE2_2.png" />
 <img src="https://github.com/DentonJC/cobs/blob/master/etc/img/t-SNE3_2.png" />
@@ -140,12 +155,12 @@ KNN | 100 | 77.27
 
 ## Resources <a name="resources"></a>
 Used:
-  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/plastid/
-  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/
   - https://archive.ics.uci.edu/ml/datasets/Molecular+Biology+%28Splice-junction+Gene+Sequences%29
   - https://archive.ics.uci.edu/ml/datasets/Molecular+Biology+%28Promoter+Gene+Sequences%29
 
 Tested:
+  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/plastid/
+  - ftp://ftp.ncbi.nlm.nih.gov/refseq/release/mitochondrion/
   - https://www.ncbi.nlm.nih.gov/unigene/?term=human[organism]
   - ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/bacteria/
   - ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/archaea/

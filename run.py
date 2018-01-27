@@ -16,11 +16,11 @@ def isnan(x):
     return isinstance(x, float) and math.isnan(x)
 
 
-def main(experiments_file, common_gridsearch, random_state, n_cols):
+def main(experiments_file, common_gridsearch, random_state, n_cols, split_test, split_val, scoring):
     """
-    Check the rows of experiments_file in a loop. If there are no results in the row (empty fields after len(cols)), 
+    Check the rows of experiments_file in a loop. If there are no results in the row (empty fields after len(cols)),
     it takes all values in this row and calls the experiment function until all result fields are filled with step len(result_cols).
-    
+
     Params
     ------
     experiments_file: string
@@ -60,25 +60,30 @@ def main(experiments_file, common_gridsearch, random_state, n_cols):
             command = command.split()
             print(command)
             if isnan(table.iloc[i, j*n_cols + len(params) + len(pos_params)]):
-                if common_gridsearch:
-                    accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command, random_state, rparams)
-                else:
-                    accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command, random_state, False)
-
+                if not common_gridsearch:
+                    rparams = False
+                
+                accuracy_test, accuracy_train, rec, auc, f1, rparams = run(command, random_state, rparams, split_test, split_val, scoring)
                 table = pd.read_csv(experiments_file)
-                table.iloc[i, j*n_cols+len(params) + len(pos_params)] = accuracy_test
-                table.iloc[i, j*n_cols+1+len(params) + len(pos_params)] = accuracy_train
+                table.iloc[i, j*n_cols+len(params) + len(pos_params)] = accuracy_train
+                table.iloc[i, j*n_cols+1+len(params) + len(pos_params)] = accuracy_test
+                table.iloc[i, j*n_cols+2+len(params) + len(pos_params)] = str(rec)
+                table.iloc[i, j*n_cols+3+len(params) + len(pos_params)] = auc
+                table.iloc[i, j*n_cols+4+len(params) + len(pos_params)] = str(f1)
+
                 table.to_csv(experiments_file, index=False)
 
 
 if __name__ == "__main__":
     common_gridsearch = False
     random_state = 13
-    n_cols = 2
-
+    n_cols = 5
+    split_test = 0.3
+    split_val = 0.3
+    scoring = "accuracy"
     def_experiments_file = 'etc/experiments.csv'
     experiments_file = input('Enter the experiment table address (default is ' + def_experiments_file + '): ')
     if experiments_file == '':
         experiments_file = def_experiments_file
 
-    main(experiments_file, common_gridsearch, random_state, n_cols)
+    main(experiments_file, common_gridsearch, random_state, n_cols, split_test, split_val, scoring)

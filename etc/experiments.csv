@@ -1,17 +1,17 @@
-Model,Data,Jobs,Patience,Gridsearch,Iter,Length,Split,train acc,test acc 
-logreg,data/promoters.csv,-1,500,True,3,4000,5,81.81818181818183,100.0
-logreg,data/splice.csv,-1,500,True,60,4000,5,88.34080717488789,89.56560680698612
-rf,data/splice.csv,-1,500,True,60,4000,5,93.27354260089693,100.0
-svc,data/splice.csv,1,500,True,10,4000,3,89.3871449925262,100.0
-if,data/splice.csv,-1,500,True,30,4000,5,20.627802690583,17.733990147783302
-knn,data/splice.csv,-1,500,True,30,4000,5,87.4439461883408,100.0
-rf,data/promoters.csv,-1,500,True,60,4000,5,86.3636363636364,97.2972972972973
-svc,data/promoters.csv,-1,500,True,30,4000,5,72.7272727272727,100.0
-if,data/promoters.csv,-1,500,True,30,4000,5,27.2727272727273,48.6486486486487
-knn,data/promoters.csv,-1,500,True,30,4000,5,77.2727272727273,100.0
-perceptron,data/splice.csv,-1,500,True,30,4000,5,,
-perceptron,data/promoters.csv,-1,500,True,30,4000,5,,
-mperceptron,data/splice.csv,-1,500,True,30,4000,5,,
-mperceptron,data/promoters.csv,-1,500,True,30,4000,5,,
-residual,data/splice.csv,-1,500,True,30,4000,5,,
-residual,data/promoters.csv,-1,500,True,30,4000,5,,
+Model,Data,Jobs,Patience,Gridsearch,Iter,Length,Split,train acc,test acc ,Recall,AUC,F1
+logreg,data/splice.csv,-1,20,True,100,4000,5,89.56560680698612,88.34080717488789,[0.72108844 0.91256831 0.9380531 ],-,[0.73103448 0.94617564 0.91510791]
+rf,data/splice.csv,-1,20,True,100,4000,5,99.95521719659651,93.57249626307924,[0.80952381 0.95081967 0.98230088],-,[0.84697509 0.96398892 0.95689655]
+svc,data/splice.csv,-1,20,True,100,4000,5,100.0,89.38714499252615,[0.83673469 0.93442623 0.89675516],-,[0.78095238 0.94736842 0.918429  ]
+if,data/splice.csv,-1,20,True,100,4000,5,18.092252575011194,21.225710014947683,[0.         0.         0.77595628 0.        ],-,[0.         0.         0.37027379 0.        ]
+knn,data/splice.csv,-1,20,True,100,4000,5,100.0,87.4439461883408,[0.86394558 0.91256831 0.85840708],-,[0.75147929 0.93296089 0.90654206]
+logreg,data/promoters.csv,-1,20,True,100,4000,5,100.0,77.27272727272727,[0.83333333 0.7       ],0.7666666666666667,[0.8        0.73684211]
+rf,data/promoters.csv,-1,20,True,100,4000,5,100.0,86.36363636363636,[0.91666667 0.8       ],0.8583333333333333,[0.88       0.84210526]
+svc,data/promoters.csv,-1,20,True,100,4000,5,100.0,77.27272727272727,[0.83333333 0.7       ],0.7666666666666667,[0.8        0.73684211]
+if,data/promoters.csv,-1,20,True,100,4000,5,44.594594594594604,36.36363636363637,[0.  0.  0.8],0.44166666666666676,[0.         0.         0.55172414]
+knn,data/promoters.csv,-1,20,True,100,4000,5,100.0,77.27272727272727,[0.75 0.8 ],0.775,[0.7826087  0.76190476]
+perceptron,data/splice.csv,-1,20,True,100,4000,5,,,,,
+perceptron,data/promoters.csv,-1,20,True,100,4000,5,,,,,
+mperceptron,data/splice.csv,-1,20,True,100,4000,5,,,,,
+mperceptron,data/promoters.csv,-1,20,True,100,4000,5,,,,,
+residual,data/splice.csv,-1,20,True,100,4000,5,,,,,
+residual,data/promoters.csv,-1,20,True,100,4000,5,,,,,

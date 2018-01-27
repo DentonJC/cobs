@@ -43,8 +43,8 @@ def get_options():
     parser.add_argument('--n_jobs', default=-1, type=int, help='number of jobs'),
     parser.add_argument('--n_folds', default=5, type=int, help='number of splits in RandomizedSearchCV'),
     parser.add_argument('--patience', '-p', default=100, type=int, help='patience of fit'),
-    parser.add_argument('--gridsearch', '-g', action='store_true', default=False, help='use gridsearch'),
-    parser.add_argument('--experiments_file', '-e', default='etc/experiments.csv', help='where to write results of experiments')
+    parser.add_argument('--gridsearch', '-g', action='store_true', default=False, help='use RandomizedSearchCV'),
+    parser.add_argument('--experiments_file', '-e', default='etc/experiments.csv', help='address where to write results of experiments')
     parser.add_argument('--length', '-l', default='256', type=int, help='maximum length of sequences'),
     parser.add_argument('--targets', '-t', default=0, type=int, help='set number of target column')
     return parser
@@ -75,10 +75,10 @@ def fingerprint(seq, length):
     return f
 
 
-def run(args_list, random_state=False, p_rparams=False):
+def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_val=0.3, scoring="accuracy"):
     """
     Run experiment.
-    
+
     Params
     ------
     args_list: options
@@ -92,12 +92,11 @@ def run(args_list, random_state=False, p_rparams=False):
     Result of experiment in metrics:
         accuracy_test: float
         accuracy_train: float
-        rec: list
+        rec: list of floats (number of classes)
         auc: float
         auc_val: float
-        f1: float
+        f1: list of floats (number of classes)
     """
-    scoring = "accuracy"
     time_start = datetime.now()
     if len(sys.argv) > 1:
         options = get_options().parse_args()
@@ -131,8 +130,8 @@ def run(args_list, random_state=False, p_rparams=False):
 
     # Dataset processing
 
-    x_train, x, y_train, y = train_test_split(features, labels, test_size=0.3, random_state=random_state)
-    x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=0.3, random_state=random_state)
+    x_train, x, y_train, y = train_test_split(features, labels, test_size=split_test, random_state=random_state)
+    x_test, x_val, y_test, y_val = train_test_split(x, y, test_size=split_val, random_state=random_state)
     x_test = np.array(x_test)
     y_test = np.array(y_test)
     x_train = np.array(x_train)
@@ -209,41 +208,43 @@ def run(args_list, random_state=False, p_rparams=False):
                                            input_shape=input_shape,
                                            output_shape=output_shape)
             model = RandomizedSearchCV(estimator=search_model,
-                                      param_distributions=gparams,
-                                      n_jobs=options.n_jobs,
-                                      cv=options.n_folds,
-                                      n_iter=options.n_iter,
-                                      verbose=10)
+                                       param_distributions=gparams,
+                                       n_jobs=options.n_jobs,
+                                       cv=options.n_folds,
+                                       n_iter=options.n_iter,
+                                       verbose=10)
         elif options.select_model[0] == "mperceptron":
             search_model = KerasClassifier(build_fn=MultilayerPerceptron,
                                            input_shape=input_shape,
                                            output_shape=output_shape)
             model = RandomizedSearchCV(estimator=search_model,
-                                      param_distributions=gparams,
-                                      n_jobs=options.n_jobs,
-                                      cv=options.n_folds,
-                                      n_iter=options.n_iter,
-                                      verbose=10)
+                                       param_distributions=gparams,
+                                       n_jobs=options.n_jobs,
+                                       cv=options.n_folds,
+                                       n_iter=options.n_iter,
+                                       verbose=10)
         elif options.select_model[0] == "residual":
             search_model = KerasClassifier(build_fn=Residual,
                                            input_shape=input_shape,
                                            output_shape=output_shape)
             model = RandomizedSearchCV(estimator=search_model,
-                                      param_distributions=gparams,
-                                      n_jobs=options.n_jobs,
-                                      cv=options.n_folds,
-                                      n_iter=options.n_iter,
-                                      verbose=10)
+                                       param_distributions=gparams,
+                                       n_jobs=options.n_jobs,
+                                       cv=options.n_folds,
+                                       n_iter=options.n_iter,
+                                       verbose=10)
 
-            #model = grid.fit(x_train, y_train)
-            
+            # model = grid.fit(x_train, y_train)
 
         else:
             logger.info("Model is not found.")
             return 0, 0, 0, 0, 0, 0
 
         logger.info("FIT")
-        history = model.fit(x_train, np.ravel(y_train))
+        try:
+            history = model.fit(x_train, np.ravel(y_train), validation_data=(x_val, np.ravel(y_val)))
+        except TypeError:
+            history = model.fit(x_train, np.ravel(y_train))
 
     else:
         if p_rparams:
@@ -287,7 +288,7 @@ def run(args_list, random_state=False, p_rparams=False):
                              init_mode=rparams.get("init_mode", 'uniform'),
                              dropout=rparams.get("dropout", 0),
                              layers=rparams.get("layers", 0))
-            
+
         else:
             logger.info("Model is not found.")
             return 0, 0, 0, 0, 0, 0
@@ -305,7 +306,7 @@ def run(args_list, random_state=False, p_rparams=False):
         score = pd.DataFrame(model.cv_results_)
     else:
         score = False
-    
+
     accuracy_test, accuracy_train, rec, auc, auc_val, f1 = evaluate(logger, options, random_state, options.output, model, x_train,
                                                                     x_test, x_val, y_val, y_train, y_test, time_start, rparams, history,
                                                                     False, False, options.n_jobs, score)
