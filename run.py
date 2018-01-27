@@ -5,6 +5,7 @@ An additional script to run a series of experiments described in table like etc/
 where columns are hyperparameters and rows are experiments.
 """
 import os
+import sys
 import math
 import random
 import pandas as pd
@@ -78,11 +79,15 @@ if __name__ == "__main__":
     common_gridsearch = False
     random_state = 13
     n_cols = 5
-    split_test = 0.3
-    split_val = 0.3
+    split_test = 0.5
+    split_val = 0.5
     scoring = "accuracy"
     def_experiments_file = 'etc/experiments.csv'
-    experiments_file = input('Enter the experiment table address (default is ' + def_experiments_file + '): ')
+    if sys.version_info[0] == 2:
+        experiments_file = raw_input('Enter the experiment table address (default is ' + def_experiments_file + '): ')
+    else:
+        experiments_file = input('Enter the experiment table address (default is ' + def_experiments_file + '): ')
+
     if experiments_file == '':
         experiments_file = def_experiments_file
 

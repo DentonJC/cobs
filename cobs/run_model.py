@@ -33,12 +33,12 @@ formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s
 
 
 def get_options():
-    default_path = os.path.dirname(os.path.realpath(__file__)).replace("/cobs", "")
+    default_path = os.path.dirname(os.path.realpath(__file__)).replace("/cobs", "", 1)
     parser = argparse.ArgumentParser(prog="Classification of biochemical sequences")
     parser.add_argument('select_model', nargs='+', help='name of the model, select from list in README'),
     parser.add_argument('dataset_path', nargs='+', default=default_path + '/tmp/dataset.csv', help='path to dataset'),
-    parser.add_argument('--output', default=default_path + "/cobs/tmp/" + str(datetime.now()) + '/', help='path to output directory'),
-    parser.add_argument('--configs', default=default_path + "/cobs/cobs/configs.ini", help='path to config file'),
+    parser.add_argument('--output', default=default_path + "/tmp/" + str(datetime.now()) + '/', help='path to output directory'),
+    parser.add_argument('--configs', default=default_path + "/cobs/configs.ini", help='path to config file'),
     parser.add_argument('--n_iter', default=6, type=int, help='number of iterations in RandomizedSearchCV'),
     parser.add_argument('--n_jobs', default=-1, type=int, help='number of jobs'),
     parser.add_argument('--n_folds', default=5, type=int, help='number of splits in RandomizedSearchCV'),
@@ -103,7 +103,7 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
     else:
         options = get_options().parse_args(args_list)
 
-    callbacks_list = create_callbacks(options.output, options.patience, "cobs")
+    callbacks = create_callbacks(options.output, options.patience, "cobs")
 
     handler = logging.FileHandler(options.output + 'log')
     handler.setFormatter(formatter)
@@ -162,7 +162,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "knn":
             model = RandomizedSearchCV(KNeighborsClassifier(**rparams),
                                        gparams,
@@ -170,7 +171,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "xgb":
             model = RandomizedSearchCV(xgb.XGBClassifier(**rparams),
                                        gparams,
@@ -178,7 +180,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "svc":
             model = RandomizedSearchCV(SVC(**rparams),
                                        gparams,
@@ -186,7 +189,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "rf":
             model = RandomizedSearchCV(RandomForestClassifier(**rparams),
                                        gparams,
@@ -194,7 +198,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "if":
             model = RandomizedSearchCV(IsolationForest(**rparams),
                                        gparams,
@@ -202,7 +207,8 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        verbose=10,
-                                       scoring=scoring)
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "perceptron":
             search_model = KerasClassifier(build_fn=Perceptron,
                                            input_shape=input_shape,
@@ -212,7 +218,9 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        n_iter=options.n_iter,
-                                       verbose=10)
+                                       verbose=10,
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "mperceptron":
             search_model = KerasClassifier(build_fn=MultilayerPerceptron,
                                            input_shape=input_shape,
@@ -222,7 +230,9 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        n_iter=options.n_iter,
-                                       verbose=10)
+                                       verbose=10,
+                                       scoring=scoring,
+                                       random_state=random_state)
         elif options.select_model[0] == "residual":
             search_model = KerasClassifier(build_fn=Residual,
                                            input_shape=input_shape,
@@ -232,17 +242,16 @@ def run(args_list, random_state=False, p_rparams=False, split_test=0.3, split_va
                                        n_jobs=options.n_jobs,
                                        cv=options.n_folds,
                                        n_iter=options.n_iter,
-                                       verbose=10)
-
-            # model = grid.fit(x_train, y_train)
-
+                                       verbose=10,
+                                       scoring=scoring,
+                                       random_state=random_state)
         else:
             logger.info("Model is not found.")
             return 0, 0, 0, 0, 0, 0
 
         logger.info("FIT")
         try:
-            history = model.fit(x_train, np.ravel(y_train), validation_data=(x_val, np.ravel(y_val)))
+            history = model.fit(x_train, np.ravel(y_train), callbacks=callbacks, validation_data=(x_val, np.ravel(y_val)))
         except TypeError:
             history = model.fit(x_train, np.ravel(y_train))
 
