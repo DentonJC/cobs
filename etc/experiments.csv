@@ -1,17 +1,9 @@
 Model,Data,Jobs,Patience,Gridsearch,Iter,Length,Split,train acc,test acc ,Recall,AUC,F1
-logreg,data/splice.csv,-1,20,True,4000,4000,7,,,,,
-rf,data/splice.csv,-1,20,True,4000,4000,7,,,,,
-svc,data/splice.csv,-1,20,True,4000,4000,7,,,,,
-if,data/splice.csv,-1,20,True,4000,4000,7,,,,,
-knn,data/splice.csv,-1,20,True,4000,4000,7,,,,,
-logreg,data/promoters.csv,-1,20,True,4000,4000,7,,,,,
-rf,data/promoters.csv,-1,20,True,4000,4000,7,,,,,
-svc,data/promoters.csv,-1,20,True,4000,4000,7,,,,,
-if,data/promoters.csv,-1,20,True,4000,4000,7,,,,,
-knn,data/promoters.csv,-1,20,True,4000,4000,7,,,,,
-perceptron,data/splice.csv,-1,20,True,4000,4000,5,,,,,
-perceptron,data/promoters.csv,-1,20,True,4000,4000,5,,,,,
-mperceptron,data/splice.csv,-1,20,True,4000,4000,5,,,,,
-mperceptron,data/promoters.csv,-1,20,True,4000,4000,5,,,,,
-residual,data/splice.csv,-1,20,True,4000,4000,5,,,,,
-logreg,data/promoters.csv,-1,20,True,4000,4000,10,,,,,
+logreg,data/splice.csv,-1,20,True,300,4000,3,88.9655172413793,88.8331242158093,[0.71910112 0.92462312 0.94285714],-,[0.74418605 0.92695214 0.92848769]
+rf,data/splice.csv,-1,20,True,300,4000,3,88.2131661442006,86.8255959849435,[0.7247191  0.93969849 0.8952381 ],-,[0.7107438  0.92345679 0.91041162]
+svc,data/splice.csv,-1,20,True,30,4000,3,100,88.7076537013802,[0.8258427  0.89949749 0.90714286],-,[0.77572559 0.90862944 0.92813642]
+knn,data/splice.csv,-1,20,True,300,4000,3,100,90.0878293601004,[0.85955056 0.90452261 0.91666667],-,[0.796875   0.92307692 0.93902439]
+logreg,data/promoters.csv,-1,20,True,300,4000,3,100,84.6153846153846,[0.8   0.875],0.8375,[0.8   0.875]
+rf,data/promoters.csv,-1,20,True,300,4000,3,100,92.3076923076923,[0.9    0.9375],0.91875,[0.9    0.9375]
+svc,data/promoters.csv,-1,20,True,300,4000,3,100,88.4615384615385,[0.9   0.875],0.8875,[0.85714286 0.90322581]
+knn,data/promoters.csv,-1,20,True,300,4000,3,100,84.6153846153846,[1.   0.75],0.875,[0.83333333 0.85714286]
